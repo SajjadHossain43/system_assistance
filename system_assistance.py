@@ -74,6 +74,7 @@ def get_conversation_chain():
      """""
     prompt = PromptTemplate(template=prompt_template, input_variables=['context', 'question'])
     llm = get_gpt_instance()
+    llm.model_rebuild()
     return load_qa_chain(llm=llm, chain_type='stuff', prompt=prompt)
 
 def process_input(question: str, index_path: os.path) -> str:
