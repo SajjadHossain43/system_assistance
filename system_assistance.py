@@ -12,8 +12,20 @@ import json
 
 import uvicorn
 #import gradio as gr
+"""OPENAI_ENDPOINT = https://hight-m87lalwz-northcentralus.cognitiveservices.azure.com/
+API_KEY = 2EqAWpytfgNV4iFEvQ1suZUdAQx142L346bnKLpcGmoyv1tfJOSWJQQJ99BCACHrzpqXJ3w3AAAAACOG3yRc
+GPT_API_VERSION = 2025-01-01-preview
+EMBED_API_VERSION = 2023-05-15
+GPT_MODEL = gpt-35-turbo-16k
+EMBED_MODEL = text-embedding-3-large
+"""
+os.environ["API_KEY"] = "2EqAWpytfgNV4iFEvQ1suZUdAQx142L346bnKLpcGmoyv1tfJOSWJQQJ99BCACHrzpqXJ3w3AAAAACOG3yRc"
+os.environ["GPT_API_VERSION"] = "2025-01-01-preview" 
+os.environ["EMBED_API_VERSION"] = "2023-05-15"
+os.environ["GPT_MODEL"] ="gpt-35-turbo-16k"
+os.environ["EMBED_MODEL"] ="text-embedding-3-large"
 
-load_dotenv()
+#load_dotenv()
 
 app = FastAPI()
 
