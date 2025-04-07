@@ -9,6 +9,8 @@ from langchain_community.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
 from langchain.chains.question_answering import load_qa_chain
 import json
+
+import uvicorn
 #import gradio as gr
 
 load_dotenv()
@@ -109,3 +111,6 @@ async def get_system_response(question: str) -> str:
 #demo = gr.TabbedInterface([iface, pdf_uploader], ["Chatbot", "PDF Upload"])
 
 #demo.launch()
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
