@@ -76,7 +76,7 @@ def process_input(question: str, index_path: os.path) -> str:
             return output
         except Exception as e:
             #return json.dumps({'answer': 'Sorry, I am not able to answer your question due to some problem'})
-            return 'Sorry, I am not able to answer your question due to some problem.'
+            return e.with_traceback()
 
 @app.post('/upload_pdf')
 async def save_file(file: UploadFile = File(...)):
