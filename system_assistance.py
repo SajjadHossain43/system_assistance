@@ -82,6 +82,10 @@ def get_conversation_chain():
 
 def process_input(question: str, index_path: os.path) -> str:
     auto_config()
+    print("GPT_MODEL:", os.getenv("GPT_MODEL"))
+    print("API_KEY:", os.getenv("API_KEY"))
+    print("GPT_API_VERSION:", os.getenv("GPT_API_VERSION"))
+    print("OPENAI_ENDPOINT:", os.getenv("OPENAI_ENDPOINT"))
     pdf_content = FAISS.load_local(index_path, embeddings=get_embedding_instance(), allow_dangerous_deserialization=True)
     if len(question) > 0:
         model_input = pdf_content.similarity_search(question)
