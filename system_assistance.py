@@ -19,16 +19,19 @@ EMBED_API_VERSION = 2023-05-15
 GPT_MODEL = gpt-35-turbo-16k
 EMBED_MODEL = text-embedding-3-large
 """
-os.environ["API_KEY"] = "2EqAWpytfgNV4iFEvQ1suZUdAQx142L346bnKLpcGmoyv1tfJOSWJQQJ99BCACHrzpqXJ3w3AAAAACOG3yRc"
-os.environ["GPT_API_VERSION"] = "2025-01-01-preview" 
-os.environ["EMBED_API_VERSION"] = "2023-05-15"
-os.environ["GPT_MODEL"] ="gpt-35-turbo-16k"
-os.environ["EMBED_MODEL"] ="text-embedding-3-large"
 
 #load_dotenv()
 
 app = FastAPI()
 
+def auto_config():
+    os.environ["API_KEY"] = "2EqAWpytfgNV4iFEvQ1suZUdAQx142L346bnKLpcGmoyv1tfJOSWJQQJ99BCACHrzpqXJ3w3AAAAACOG3yRc"
+    os.environ["GPT_API_VERSION"] = "2025-01-01-preview" 
+    os.environ["EMBED_API_VERSION"] = "2023-05-15"
+    os.environ["GPT_MODEL"] ="gpt-35-turbo-16k"
+    os.environ["EMBED_MODEL"] ="text-embedding-3-large"
+    os.environ["OPENAI_ENDPOINT"] ="https://hight-m87lalwz-northcentralus.cognitiveservices.azure.com/"
+    
 def get_gpt_instance():
     return AzureChatOpenAI(azure_deployment=os.getenv('GPT_MODEL'), api_key=os.getenv('API_KEY'), api_version=os.getenv('GPT_API_VERSION'), azure_endpoint=os.getenv('OPENAI_ENDPOINT'))
 
@@ -78,6 +81,7 @@ def get_conversation_chain():
     return load_qa_chain(llm=llm, chain_type='stuff', prompt=prompt)
 
 def process_input(question: str, index_path: os.path) -> str:
+    auto_config()
     pdf_content = FAISS.load_local(index_path, embeddings=get_embedding_instance(), allow_dangerous_deserialization=True)
     if len(question) > 0:
         model_input = pdf_content.similarity_search(question)
@@ -124,6 +128,6 @@ async def get_system_response(question: str) -> str:
 #demo = gr.TabbedInterface([iface, pdf_uploader], ["Chatbot", "PDF Upload"])
 
 #demo.launch()
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+#if __name__ == "__main__":
+    #port = int(os.environ.get("PORT", 10000))
+    #uvicorn.run(app, host="0.0.0.0", port=port)
