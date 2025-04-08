@@ -32,11 +32,15 @@ def auto_config():
     os.environ["EMBED_MODEL"] ="text-embedding-3-large"
     os.environ["OPENAI_ENDPOINT"] ="https://hight-m87lalwz-northcentralus.cognitiveservices.azure.com/"
     
+#def get_gpt_instance():
+    #return AzureChatOpenAI(azure_deployment=os.getenv('GPT_MODEL'), api_key=os.getenv('API_KEY'), api_version=os.getenv('GPT_API_VERSION'), azure_endpoint=os.getenv('OPENAI_ENDPOINT'))
 def get_gpt_instance():
-    return AzureChatOpenAI(azure_deployment=os.getenv('GPT_MODEL'), api_key=os.getenv('API_KEY'), api_version=os.getenv('GPT_API_VERSION'), azure_endpoint=os.getenv('OPENAI_ENDPOINT'))
+    return AzureChatOpenAI(azure_deployment="gpt-35-turbo-16k", api_key="2EqAWpytfgNV4iFEvQ1suZUdAQx142L346bnKLpcGmoyv1tfJOSWJQQJ99BCACHrzpqXJ3w3AAAAACOG3yRc", api_version="2025-01-01-preview", azure_endpoint="https://hight-m87lalwz-northcentralus.cognitiveservices.azure.com/")
 
+#def get_embedding_instance():
+    #return AzureOpenAIEmbeddings(azure_deployment=os.getenv('EMBED_MODEL'), api_key=os.getenv('API_KEY'), api_version=os.getenv('EMBED_API_VERSION'), azure_endpoint=os.getenv('OPENAI_ENDPOINT'))
 def get_embedding_instance():
-    return AzureOpenAIEmbeddings(azure_deployment=os.getenv('EMBED_MODEL'), api_key=os.getenv('API_KEY'), api_version=os.getenv('EMBED_API_VERSION'), azure_endpoint=os.getenv('OPENAI_ENDPOINT'))
+    return AzureOpenAIEmbeddings(azure_deployment="text-embedding-3-large", api_key="2EqAWpytfgNV4iFEvQ1suZUdAQx142L346bnKLpcGmoyv1tfJOSWJQQJ99BCACHrzpqXJ3w3AAAAACOG3yRc", api_version="2023-05-15", azure_endpoint="https://hight-m87lalwz-northcentralus.cognitiveservices.azure.com/")
 
 def get_text_from_pdf(pdf_path: os.path) -> str:
     texts = ''
