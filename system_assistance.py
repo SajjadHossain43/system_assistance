@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, File, UploadFile
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
@@ -59,13 +60,16 @@ def get_chunk_from_texts(texts: str):
     return RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000).split_text(texts)
 
 def generate_index(pdf_path: os.path, index_path: os.path):
-    if not os.path.exists(os.path.join(pdf_path, 'index.faiss')):
-        texts = get_text_from_pdf(pdf_path)
-        if len(texts) > 0:
-            text_chunks = get_chunk_from_texts(texts)
-            embedding = get_embedding_instance()
-            vectors = FAISS.from_texts(text_chunks, embedding=embedding)
-            vectors.save_local(index_path)
+    if os.path.exists(os.path.join(index_path, 'index.faiss')):
+        os.remove(os.path.join(index_path, 'index.faiss'))
+        os.remove(os.path.join(index_path, 'index.pkl'))
+    #if not os.path.exists(os.path.join(pdf_path, 'index.faiss')):
+    texts = get_text_from_pdf(pdf_path)
+    if len(texts) > 0:
+        text_chunks = get_chunk_from_texts(texts)
+        embedding = get_embedding_instance()
+        vectors = FAISS.from_texts(text_chunks, embedding=embedding)
+        vectors.save_local(index_path)
     return True
 
 def get_conversation_chain():
@@ -86,10 +90,6 @@ def get_conversation_chain():
 
 def process_input(question: str, index_path: os.path) -> str:
     auto_config()
-    print("GPT_MODEL:", os.getenv("GPT_MODEL"))
-    print("API_KEY:", os.getenv("API_KEY"))
-    print("GPT_API_VERSION:", os.getenv("GPT_API_VERSION"))
-    print("OPENAI_ENDPOINT:", os.getenv("OPENAI_ENDPOINT"))
     pdf_content = FAISS.load_local(index_path, embeddings=get_embedding_instance(), allow_dangerous_deserialization=True)
     if len(question) > 0:
         model_input = pdf_content.similarity_search(question)
@@ -100,18 +100,37 @@ def process_input(question: str, index_path: os.path) -> str:
             #return json.dumps({'answer': output})
             return output
         except Exception as e:
-            #return json.dumps({'answer': 'Sorry, I am not able to answer your question due to some problem'})
             return e.with_traceback()
 
 @app.post('/upload_pdf')
 async def save_file(file: UploadFile = File(...)):
     if not os.path.exists(os.path.join(os.getcwd(), 'pdf')): os.mkdir(f'{os.getcwd()}/pdf')
     if not os.path.exists(os.path.join(os.getcwd(), 'FAISS')): os.mkdir(f'{os.getcwd()}/FAISS')
-    file_path = f"{os.path.join(os.getcwd(), 'pdf')}/1.pdf"
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
-    generate_index(pdf_path=os.path.join(os.getcwd(), 'pdf'), index_path=os.path.join(os.getcwd(), 'FAISS'))
+    pdf_folder = os.path.join(os.getcwd(), 'pdf')
+    existing_pdf_list = glob.glob(f'{pdf_folder}/*.pdf', recursive=True)
+    pdf_names = [pdf_name for pdf_name in existing_pdf_list]
+    if not file.filename in pdf_names:
+        file_path = f"{os.path.join(os.getcwd(), 'pdf')}/{file.filename}"
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+        generate_index(pdf_path=os.path.join(os.getcwd(), 'pdf'), index_path=os.path.join(os.getcwd(), 'FAISS'))
+    else:
+        return f'File named {file.filename} already exists.'
     return f"File saved as {file_path}"
+
+@app.post('/upload_files')
+async def save_files(files: List[UploadFile] = File(...)):
+    if not os.path.exists(os.path.join(os.getcwd(), 'pdf')): os.mkdir(f'{os.getcwd()}/pdf')
+    if not os.path.exists(os.path.join(os.getcwd(), 'FAISS')): os.mkdir(f'{os.getcwd()}/FAISS')
+    pdf_folder = os.path.join(os.getcwd(), 'pdf')
+    existing_pdf_list = glob.glob(f'{pdf_folder}/*.pdf', recursive=True)
+    pdf_names = [pdf_name for pdf_name in existing_pdf_list]
+    for pdf_file in files:
+        if not pdf_file in pdf_names:
+            file_path = f'{os.path.join(os.getcwd(), 'pdf')}/{pdf_file.filename}'
+            with open(file_path, 'wb') as f:
+                f.write(await pdf_file.read())
+    return f"File saved in {pdf_folder}" if generate_index(pdf_path=os.path.join(os.getcwd(), 'pdf'), index_path=os.path.join(os.getcwd(), 'FAISS')) else 'Files could be saved!'
     
 @app.get('/ask')
 async def get_system_response(question: str) -> str:
